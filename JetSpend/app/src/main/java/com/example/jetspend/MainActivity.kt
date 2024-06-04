@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -31,6 +32,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,8 +62,7 @@ fun JetSpend() {
     val Jedzenie = "jedzenie"
     val Transport = "transport"
 
-
-
+    var id by remember { mutableStateOf("0") }
     var inputNumber by remember { mutableStateOf("0") }
     var kategoria by remember { mutableStateOf(Rozrywka) }
     var licznik by remember { mutableIntStateOf(1) }
@@ -70,9 +71,9 @@ fun JetSpend() {
     var SpendJedzenie by remember { mutableIntStateOf(0) }
     var SpendTransport by remember { mutableIntStateOf(0) }
     var SpendSum by remember { mutableIntStateOf(0) }
-    var Spends by remember { mutableStateOf(listOf(Triple(0, Rozrywka, 0))) }
+    var Spends by remember { mutableStateOf(mutableListOf(Triple(0, Rozrywka, 0))) }
     fun createSpend(licznik: Int){
-        Spends+=(Triple(licznik, kategoria, inputNumber.toInt()))
+        Spends.add(Triple(licznik, kategoria, inputNumber.toInt()))
         when (kategoria){
             "rozrywka" ->{
                 SpendRozrywka+=inputNumber.toInt()
@@ -87,10 +88,33 @@ fun JetSpend() {
         SpendSum+=inputNumber.toInt()
     }
 
+    fun deleteSpend(id: Int){
+        for((szukaj, wydatek) in Spends.withIndex()){
+            if (wydatek.first == id){
+                when (wydatek.second){
+                    "rozrywka" ->{
+                        SpendRozrywka-=wydatek.third
+                    }
+                    "jedzenie" ->{
+                        SpendJedzenie-=wydatek.third
+                    }
+                    "transport" -> {
+                        SpendTransport -= wydatek.third
+                    }
+                }
+                SpendSum-=wydatek.third
+                Spends.removeAt(szukaj)
+                break
+            }
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+
     ){
+        Spacer(modifier = Modifier.height(50.dp))
         Text(text = "Kwota:")
         OutlinedTextField(value = inputNumber, onValueChange = {inputNumber = it})
         Spacer(modifier = Modifier.height(20.dp))
@@ -119,16 +143,23 @@ fun JetSpend() {
                 }
 
             }
-
-
-        Spacer(modifier = Modifier.height(20.dp))
-        Text(text = "Suma: $SpendSum")
         Spacer(modifier = Modifier.height(20.dp))
         Text(text = "Rozrywka: $SpendRozrywka")
         Spacer(modifier = Modifier.height(20.dp))
         Text(text = "Jedzenie: $SpendJedzenie")
         Spacer(modifier = Modifier.height(20.dp))
         Text(text = "Transport: $SpendTransport")
+        Spacer(modifier = Modifier.height(20.dp))
+        Text(text = "Suma: $SpendSum")
+        Spacer(modifier = Modifier.height(20.dp))
+        Text(text = "ID do usunięcia:")
+        OutlinedTextField(value = id, onValueChange = {id = it})
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(onClick = { deleteSpend(id.toInt()) }) {
+            Text(text = "Usuń")
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+        Text(text = "Wydatki: $Spends")
     }
 }
 
